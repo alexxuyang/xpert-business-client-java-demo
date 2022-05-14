@@ -35,12 +35,14 @@ public class App {
     }
 
     public static byte[] getShareKey() throws Exception {
+        // openssl pkcs8 -topk8 -inform PEM -outform DER -in pri_hashkey-hub.pem -out pri_hashkey-hub.der -nocrypt
         byte[] privKeyByteArray1 = Files.readAllBytes(Paths.get("pri_hashkey-hub.der"));
         PKCS8EncodedKeySpec keySpec1 = new PKCS8EncodedKeySpec(privKeyByteArray1);
         KeyFactory keyFactory1 = KeyFactory.getInstance("EC");
         PrivateKey myPrivKey = keyFactory1.generatePrivate(keySpec1);
         System.out.println("Algorithm: " + myPrivKey.getAlgorithm());
 
+        // openssl pkey -pubout -inform pem -outform der -in pri_hashkey-hub.pem -out pub_hashkey-hub.der
         byte[] pubKeyByteArray2 = Files.readAllBytes(Paths.get("pub_gateway.der"));
         X509EncodedKeySpec keySpec2 = new X509EncodedKeySpec(pubKeyByteArray2);
         KeyFactory keyFactory2 = KeyFactory.getInstance("EC");
