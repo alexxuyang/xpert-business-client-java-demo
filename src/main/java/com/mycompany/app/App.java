@@ -104,7 +104,7 @@ public class App {
             System.out.println("out_iv_base64:" + out_iv_base64);
             String out_msg_base64 = new String(Base64.getEncoder().encode(out_msg_encrypted));
             System.out.println("out_msg_base64:" + out_msg_base64);
-            String result = String.format("{\"encrypted\":\"%s\",\"iv\":\"%s\"}\"", out_msg_base64, out_iv_base64);
+            String result = String.format("{\"encrypted\":\"%s\",\"iv\":\"%s\"}", out_msg_base64, out_iv_base64);
 
             System.out.println("out_msg_result:" + result);
 
