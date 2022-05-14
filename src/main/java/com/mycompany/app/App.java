@@ -10,6 +10,7 @@ import javax.crypto.spec.IvParameterSpec;
 import javax.crypto.Cipher;
 import javax.crypto.spec.SecretKeySpec;
 import javax.crypto.KeyAgreement;
+import javax.xml.bind.DatatypeConverter;
 
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import io.javalin.Javalin;
@@ -104,7 +105,7 @@ public class App {
                 out_msg_unencrypted = String.format("{\"kaka\":\"hahaha\",\"ts\":\"%s\"}", tss);
             } else {
                 var user_id = Base64.getDecoder().decode(user_id_base64);
-                out_msg_unencrypted = String.format("{\"kaka\":\"hahaha\",\"userID\":\"%s\",\"ts\":\"%s\"}", user_id, tss);
+                out_msg_unencrypted = String.format("{\"kaka\":\"hahaha\",\"userID\":\"%s\",\"ts\":\"%s\"}", DatatypeConverter.printHexBinary(user_id), tss);
             }
 
             System.out.println("out_msg_unencrypted:" + out_msg_unencrypted);            
