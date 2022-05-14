@@ -81,6 +81,7 @@ public class App {
         app.post("/pong", ctx -> {
             ctx.headerMap().forEach((k,v) -> System.out.printf("%s:%s\n", k, v));
             var iv_base64 = ctx.header("X-Encrypt-Iv");
+            var user_id_base64 = ctx.header("X-User-ID");
 
             System.out.println(ctx.body());
             
@@ -100,13 +101,19 @@ public class App {
 
             System.out.println("out_msg_unencrypted:" + out_msg_unencrypted);            
             byte[] out_msg_encrypted = encryptMsg(keys, out_msg_unencrypted, iv);
-            System.out.println("out_msg_encrypted:" + out_msg_encrypted);
 
             String out_iv_base64 = new String(Base64.getEncoder().encode(iv));
             System.out.println("out_iv_base64:" + out_iv_base64);
             String out_msg_base64 = new String(Base64.getEncoder().encode(out_msg_encrypted));
             System.out.println("out_msg_base64:" + out_msg_base64);
-            String result = String.format("{\"encrypted\":\"%s\",\"iv\":\"%s\"}", out_msg_base64, out_iv_base64);
+            String result;
+            
+            if (user_id_base64 == null) {
+                result = String.format("{\"encrypted\":\"%s\",\"iv\":\"%s\"}", out_msg_base64, out_iv_base64);
+            } else {
+                var user_id = Base64.getDecoder().decode(user_id_base64);
+                result = String.format("{\"encrypted\":\"%s\",\"userId\":\"%s\",\"iv\":\"%s\"}", out_msg_base64, user_id, out_iv_base64);
+            }            
 
             System.out.println("out_msg_result:" + result);
 
