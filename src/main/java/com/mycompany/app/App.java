@@ -108,6 +108,8 @@ public class App {
 
             System.out.println("out_msg_result:" + result);
 
+            ctx.header("X-Encrypted", "true");
+
             ctx.result(result);
         });
 
