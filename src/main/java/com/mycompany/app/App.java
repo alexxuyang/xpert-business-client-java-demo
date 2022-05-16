@@ -15,8 +15,12 @@ import javax.xml.bind.DatatypeConverter;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import io.javalin.Javalin;
 import com.google.gson.Gson;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class App {
+    private static final Logger logger = LoggerFactory.getLogger(Test.class);
+
     class EncryptedMsg {
         private String encrypted;
     
@@ -41,21 +45,21 @@ public class App {
         PKCS8EncodedKeySpec keySpec1 = new PKCS8EncodedKeySpec(privKeyByteArray1);
         KeyFactory keyFactory1 = KeyFactory.getInstance("EC");
         PrivateKey myPrivKey = keyFactory1.generatePrivate(keySpec1);
-        System.out.println("Algorithm: " + myPrivKey.getAlgorithm());
+        logger.info("Algorithm:{}", myPrivKey.getAlgorithm());
 
         // openssl pkey -pubout -inform pem -outform der -in pri_hashkey-hub.pem -out pub_hashkey-hub.der
         byte[] pubKeyByteArray2 = Files.readAllBytes(Paths.get("pub_gateway.der"));
         X509EncodedKeySpec keySpec2 = new X509EncodedKeySpec(pubKeyByteArray2);
         KeyFactory keyFactory2 = KeyFactory.getInstance("EC");
         PublicKey myPubKey = keyFactory2.generatePublic(keySpec2);
-        System.out.println("Algorithm: " + myPubKey.getAlgorithm());
+        logger.info("Algorithm:{}", myPubKey.getAlgorithm());
 
         KeyAgreement ka = KeyAgreement.getInstance("ECDH", new BouncyCastleProvider());
         ka.init(myPrivKey);
         ka.doPhase(myPubKey, true);
 
         byte[] sharedSecret = ka.generateSecret();
-        System.out.println(Base64.getEncoder().encodeToString(sharedSecret));
+        // System.out.println(Base64.getEncoder().encodeToString(sharedSecret));
         return sharedSecret;
     }
     
@@ -84,15 +88,15 @@ public class App {
             var iv_base64 = ctx.header("X-Encrypt-Iv");
             var user_id_base64 = ctx.header("X-User-ID");
             
-            System.out.println(user_id_base64);
-            System.out.println(ctx.body());
+            logger.info("user id base64:{}", user_id_base64);
+            logger.info("request body:{}", ctx.body());
             
             Gson g = new Gson();  
             EncryptedMsg msg = g.fromJson(ctx.body(), EncryptedMsg.class);
 
-            System.out.println("in_msg_encrypted:"+ msg.getEncrypted());
+            logger.info("in_msg_encrypted:{}", msg.getEncrypted());
             String in_msg = decryptMsg(keys, msg.getEncrypted(), iv_base64);
-            System.out.println("in_msg_dcrypted:"+ in_msg);
+            logger.info("in_msg_dcrypted:{}", in_msg);
 
             Random random = new Random();
             byte[] iv = new byte[16];
@@ -108,16 +112,16 @@ public class App {
                 out_msg_unencrypted = String.format("{\"kaka\":\"hahaha\",\"userID\":\"%s\",\"ts\":\"%s\"}", DatatypeConverter.printHexBinary(user_id), tss);
             }
 
-            System.out.println("out_msg_unencrypted:" + out_msg_unencrypted);            
+            logger.info("out_msg_unencrypted:{}", out_msg_unencrypted);            
             byte[] out_msg_encrypted = encryptMsg(keys, out_msg_unencrypted, iv);
 
             String out_iv_base64 = new String(Base64.getEncoder().encode(iv));
-            System.out.println("out_iv_base64:" + out_iv_base64);
+            logger.info("out_iv_base64:{}", out_iv_base64);
             String out_msg_base64 = new String(Base64.getEncoder().encode(out_msg_encrypted));
-            System.out.println("out_msg_base64:" + out_msg_base64);
+            logger.info("out_msg_base64:{}", out_msg_base64);
             String result = String.format("{\"encrypted\":\"%s\",\"iv\":\"%s\"}", out_msg_base64, out_iv_base64);
 
-            System.out.println("out_msg_result:" + result);
+            logger.info("out_msg_result:{}", result);
 
             ctx.header("X-Encrypted", "true");
 
